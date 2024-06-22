@@ -1,12 +1,14 @@
 import 'package:easy_pay/src/app_theme.dart';
+import 'package:easy_pay/src/home/views/home_view.dart';
+import 'package:easy_pay/src/login/views/login_view.dart';
+import 'package:easy_pay/src/login/views/olvido_su_contrasenha_view.dart';
+import 'package:easy_pay/src/login/views/register_view.dart';
+import 'package:easy_pay/src/sample_feature/sample_item_details_view.dart';
+import 'package:easy_pay/src/settings/settings_controller.dart';
+import 'package:easy_pay/src/settings/settings_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-
-import 'sample_feature/sample_item_details_view.dart';
-import 'login/login_view.dart';
-import 'settings/settings_controller.dart';
-import 'settings/settings_view.dart';
 
 /// The Widget that configures your application.
 class MyApp extends StatelessWidget {
@@ -65,8 +67,12 @@ class MyApp extends StatelessWidget {
                     return SettingsView(controller: settingsController);
                   case SampleItemDetailsView.routeName:
                     return const SampleItemDetailsView();
-                  case SampleItemDetailsView.routeName:
-                    return const SampleItemDetailsView();
+                  case RegisterView.routeName:
+                    return const RegisterView();
+                  case OlvidoSuContrasenhaView.routeName:
+                    return const OlvidoSuContrasenhaView();
+                  case HomeView.routeName:
+                    return const HomeView();
                   case LoginView.routeName:
                   default:
                     return const LoginView();

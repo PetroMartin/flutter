@@ -1,9 +1,15 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:easy_pay/src/core/form_validator.dart';
+import 'package:easy_pay/src/core/widgets/text_field/login_text_field.dart';
+import 'package:easy_pay/src/home/views/home_view.dart';
+import 'package:easy_pay/src/login/models/user_model.dart';
+import 'package:easy_pay/src/login/controller/auth_service.dart';
+import 'package:easy_pay/src/login/views/olvido_su_contrasenha_view.dart';
+import 'package:easy_pay/src/login/views/register_view.dart';
+import 'package:easy_pay/src/sample_feature/sample_item.dart';
+import 'package:easy_pay/src/settings/settings_view.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart'; // Importar el paquete url_launcher
-
-import '../sample_feature/sample_item.dart';
-import '../settings/settings_view.dart';
 
 /// Displays a list of SampleItems.
 class LoginView extends StatelessWidget {
@@ -23,6 +29,10 @@ class LoginView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final TextEditingController correoController = TextEditingController();
+    final TextEditingController contrasenhaController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+    final AuthService authService = AuthService();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Iniciar Sesion'),
@@ -48,9 +58,9 @@ class LoginView extends StatelessWidget {
           child: Image.asset('assets/images/easy_pay.png'), // La imagen
         ),
       ),*/
-      body: Container(
-        color: Colors.yellow, // Color de fondo amarillo
-        padding: const EdgeInsets.all(16.0),
+      body: Form(
+        key: formKey,
+        //padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
@@ -69,55 +79,31 @@ class LoginView extends StatelessWidget {
             ),
             Center(
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                    vertical: 4.0,
-                    horizontal: 4.0), // Padding específico para el TextField
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 4.0,
+                      horizontal: 4.0), // Padding específico para el TextField
 
-                child: TextField(
-                  decoration: InputDecoration(
+                  child: LoginTextField(
+                    controller: correoController,
                     labelText: 'Usuario',
-                    labelStyle: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
                     hintText: 'Escriba su usuario',
-                    hintStyle: TextStyle(color: Colors.grey),
-                    prefixIcon: Icon(Icons.text_fields, color: Colors.blue),
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.black),
-                    ),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.black),
-                    ),
-                    //contentPadding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 20.0),
-                  ),
-                ),
-              ),
+                    validator: FormValidator.validateProductName,
+                    prefixIcon: Icons.text_fields,
+                  )),
             ),
             Center(
               child: ValueListenableBuilder(
                 valueListenable: _obscureTextNotifier,
                 builder: (context, obscureText, child) {
-                  return TextField(
+                  return LoginTextField(
+                    controller: contrasenhaController,
+                    labelText: 'Contraseña',
+                    hintText: 'Ingrese su contraseña',
+                    validator: FormValidator.validatePassword,
+                    prefixIcon: Icons.lock,
                     obscureText: obscureText,
-                    decoration: InputDecoration(
-                      labelText: 'Contraseña',
-                      labelStyle: TextStyle(color: Colors.black),
-                      hintText: 'Ingrese su contraseña',
-                      hintStyle: TextStyle(color: Colors.grey),
-                      prefixIcon: Icon(Icons.lock, color: Colors.blue),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          obscureText ? Icons.visibility : Icons.visibility_off,
-                          color: Colors.blue,
-                        ),
-                        onPressed: _toggleObscureText,
-                      ),
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.blue),
-                      ),
-                      focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.green),
-                      ),
-                      //contentPadding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 20.0),
-                    ),
+                    onToggleVisibility: _toggleObscureText,
+                    isPassword: true,
                   );
                 },
               ),
@@ -127,21 +113,50 @@ class LoginView extends StatelessWidget {
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                  print('Login presionado');
+                  UserModel persona = UserModel(
+                      username: correoController.text,
+                      password: contrasenhaController.text);
+                  authService.login(context, persona);
+                  //Navigator.restorablePushNamed(context, HomeView.routeName);
+                  //print('Login presionado');
                 },
                 child: Text('Login'),
               ),
             ),
             Center(
               child: TextButton(
-                onPressed: () {
+                /*onPressed: () {
                   // Acción del botón
-                  print('olvido presionado');
+                  Navigator.restorablePushNamed(
+                      context, OlvidoSuContrasenhaView.routeName);
+                },*/
+                onPressed: () {
+                  if (!formKey.currentState!.validate()) {
+                    return;
+                  }
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('Datos del formulario'),
+                        content: Text('Nombre: ${correoController.text}\n'),
+                        actions: <Widget>[
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('Cerrar'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
                 },
                 style: TextButton.styleFrom(
                   padding: EdgeInsets.symmetric(
-                      vertical: 15.0, horizontal: 20.0), // Padding del botón
-                  textStyle: TextStyle(fontSize: 18.0), // Estilo del texto
+                      vertical: 15.0,
+                      horizontal:
+                          20.0), // Padding del botón // Estilo del texto
                 ),
                 child: Text('¿Olvido su contraseña?'),
               ),
@@ -149,7 +164,8 @@ class LoginView extends StatelessWidget {
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                  print('crea cuenta presionado');
+                  Navigator.restorablePushNamed(
+                      context, RegisterView.routeName);
                 },
                 child: Text('Crear cuenta'),
               ),
